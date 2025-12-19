@@ -1,0 +1,42 @@
+function doPost(e) {
+  if (!e || !e.postData) return ContentService.createTextOutput('No Data');
+  
+  const contents = JSON.parse(e.postData.contents);
+  
+  // 🔥 新增：判斷是否為來自 LIFF 的 JSON 請求
+  if (contents.action === "liff_add_book") {
+    // 呼叫你現有的存檔與 AI 邏輯
+    const result = createNotionPage({
+      title: contents.title,
+      author: contents.author,
+      category: contents.category,
+      status: contents.status,
+      review: contents.review,
+      rating: "⭐⭐⭐⭐⭐", // LIFF 也可以增加評分欄位
+      dateStr: ""
+    });
+
+    // 存檔成功後，主動發送訊息通知使用者 (需有 userId)
+    if (result.success && contents.userId) {
+       pushLineMessage(contents.userId, "🎉 透過 LIFF 成功紀錄《" + contents.title + "》！AI 摘要已同步至 Notion。");
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // 原有的 LINE Bot 事件處理
+  try {
+    const body = contents;
+    if (!body.events || body.events.length === 0) return ContentService.createTextOutput('OK');
+    // ... 原本的 handleTextMessage 邏輯 ...
+  } catch (err) { ... }
+}
+
+// 輔助函式：主動推播訊息
+function pushLineMessage(userId, text) {
+  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN },
+    payload: JSON.stringify({ to: userId, messages: [{ type: 'text', text: text }] })
+  });
+}
