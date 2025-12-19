@@ -115,67 +115,100 @@
 
 <div class="container" id="form-container">
     <h2>📖 智能閱讀紀錄</h2>
-    <form id="bookForm">
-        <div class="form-group">
-            <label>書名 (必填)</label>
-            <input type="text" id="title" required placeholder="例如：原子習慣">
+    
+    <div id="book-list">
+        <div class="book-card" style="border-bottom: 2px dashed #ECEFF1; margin-bottom: 20px; padding-bottom: 10px;">
+            <div class="form-group">
+                <label>書名 (必填)</label>
+                <input type="text" class="field-title" required placeholder="例如：原子習慣">
+            </div>
+            <div class="form-group">
+                <label>作者 / 類別</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" class="field-author" placeholder="作者" style="flex: 1;">
+                    <select class="field-category" style="flex: 1;">
+                        <option value="自我成長">自我成長</option>
+                        <option value="商業理財">商業理財</option>
+                        <option value="心理學">心理學</option>
+                        <option value="文學小說">文學小說</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>狀態 / 評分</label>
+                <div style="display: flex; gap: 10px;">
+                    <select class="field-status" style="flex: 1;">
+                        <option value="閱讀完畢☑️" selected>閱讀完畢☑️</option>
+                        <option value="正在讀📖">正在讀📖</option>
+                        <option value="已購入🛒">已購入🛒</option>
+                    </select>
+                    <select class="field-rating" style="flex: 1;">
+                        <option value="⭐⭐⭐⭐⭐">5星</option>
+                        <option value="⭐⭐⭐⭐">4星</option>
+                        <option value="⭐⭐⭐">3星</option>
+                    </select>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label>作者</label>
-            <input type="text" id="author" placeholder="詹姆斯．克利爾">
-        </div>
-        <div class="form-group">
-            <label>類別</label>
-            <select id="category">
-                <option value="自我成長">自我成長</option>
-                <option value="商業理財">商業理財</option>
-                <option value="心理學">心理學</option>
-                <option value="文學小說">文學小說</option>
-                <option value="科技趨勢">科技趨勢</option>
-                <option value="其他">其他</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>閱讀狀態</label>
-            <select id="status">
-                <option value="閱讀完畢☑️" selected>閱讀完畢☑️</option>
-                <option value="正在讀📖">正在讀📖</option>
-                <option value="已購入🛒">已購入🛒</option>
-                <option value="願望清單🧚">願望清單🧚</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>推薦指數</label>
-            <select id="rating">
-                <option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐ (極推)</option>
-                <option value="⭐⭐⭐⭐">⭐⭐⭐⭐ (推薦)</option>
-                <option value="⭐⭐⭐">⭐⭐⭐ (普通)</option>
-                <option value="⭐⭐">⭐⭐ (不推)</option>
-                <option value="⭐">⭐ (雷)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>心得筆記 (AI 將根據此生成金句)</label>
-            <textarea id="review" rows="4" placeholder="寫下你的感想..."></textarea>
-        </div>
-        <button type="submit" id="submitBtn">儲存至 Notion</button>
-        <div id="loading-text"><span class="spinner"></span>AI 正在處理摘要與金句...</div>
-    </form>
-</div>
-
-<div id="success-overlay">
-    <div class="check-icon">✓</div>
-    <h3 style="color: var(--primary); margin-bottom: 5px;">紀錄成功</h3>
-    <p style="color: var(--secondary); margin-bottom: 25px;">Notion 與 AI 已同步更新</p>
-    <div class="btn-group">
-        <button onclick="location.reload()">再記一本</button>
-        <button class="btn-outline" onclick="liff.closeWindow()">關閉頁面</button>
     </div>
+
+    <button type="button" id="addMoreBtn" style="background-color: var(--secondary); margin-bottom: 10px;">➕ 再加一本書</button>
+    <button type="button" id="submitBtn">確認儲存至 Notion</button>
+    
+    <div id="loading-text"><span class="spinner"></span>AI 正在批次處理中...</div>
 </div>
 
 <script>
+    // ➕ 點擊增加欄位的邏輯
+    document.getElementById('addMoreBtn').addEventListener('click', () => {
+        const bookList = document.getElementById('book-list');
+        const newCard = bookList.children[0].cloneNode(true); // 複製第一組
+        // 清空複製出來的文字內容
+        newCard.querySelectorAll('input').forEach(input => input.value = '');
+        bookList.appendChild(newCard);
+    });
+
+    // 修改提交邏輯：收集所有卡片的資料
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('submitBtn');
+        const cards = document.querySelectorAll('.book-card');
+        const booksData = [];
+
+        cards.forEach(card => {
+            const title = card.querySelector('.field-title').value;
+            if (title) {
+                booksData.push({
+                    title: title,
+                    author: card.querySelector('.field-author').value || '未知',
+                    category: card.querySelector('.field-category').value,
+                    status: card.querySelector('.field-status').value,
+                    rating: card.querySelector('.field-rating').value,
+                    dateStr: new Date().toISOString().slice(0, 7)
+                });
+            }
+        });
+
+        if (booksData.length === 0) return alert('請至少填寫一本書名');
+
+        btn.disabled = true;
+        document.getElementById('loading-text').style.display = 'block';
+
+        // 發送陣列到 GAS
+        await fetch(GAS_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: 'liff_submit_bulk', data: booksData })
+        });
+
+        setTimeout(() => {
+            document.getElementById('success-overlay').style.display = 'flex';
+        }, 2000);
+    });
+</script>
+
+<script>
     // 🔴 這裡請填入你的 GAS 部署網址
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzH9hgATbI2S_ZQvws7-FBTo8HAW4cwBZsZ4fAA1H6Q2wCBgDHUO60Bn2nFZEZ9mAa-RA/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbywrkK0bERwU4TOtwsj79ZcAfEUvCq1nrcAA1_Izh59J5riZpV8fvJ6SldPXMVrox9t1w/exec"; 
     const MY_LIFF_ID = "2008731100-q3JK2BPf";
 
     async function initLiff() {
