@@ -3,114 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 智能閱讀紀錄</title>
+    <title>AI 智能書籍紀錄</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #455A64;   /* 深岩灰 */
             --secondary: #78909C; /* 藍灰 */
             --accent: #81C784;    /* 莫蘭迪綠 */
             --bg: #F5F7F8;
+            --white: #FFFFFF;
+            --text: #37474F;
         }
-        body { background-color: var(--bg); color: var(--primary); font-family: 'PingFang TC', sans-serif; }
-        .form-card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .input-field { border: 1px solid #CFD8DC; border-radius: 8px; transition: all 0.3s; }
-        .input-field:focus { border-color: var(--secondary); outline: none; ring: 2px var(--secondary); }
-        .btn-submit { background-color: var(--primary); transition: transform 0.2s; }
-        .btn-submit:active { transform: scale(0.95); }
-        .star-rating { color: #FFC107; font-size: 1.5rem; }
-        /* 成功動畫遮罩 */
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--white);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--secondary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            background-color: #FAFAFA;
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .rating {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        /* 成功動畫與遮罩 */
         #success-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9);
-            z-index: 50; flex-direction: column; align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--white);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .check-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            width: 80%;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            color: var(--secondary);
+            font-size: 0.9rem;
+            margin-top: 10px;
         }
     </style>
 </head>
-<body class="p-4">
-    <div id="form-section" class="max-w-md mx-auto form-card p-6 mt-4 animate__animated animate__fadeIn">
-        <h1 class="text-xl font-bold mb-6 flex items-center text-slate-700">
-            <span class="mr-2">📚</span> 新增閱讀紀錄
-        </h1>
-        <form id="bookForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium mb-1">書名 (必填)</label>
-                <input type="text" id="title" required class="w-full p-3 input-field" placeholder="請輸入書名">
-            </div>
-            <button type="submit" id="submitBtn" class="w-full btn-submit text-white py-4 rounded-xl font-bold text-lg mt-4 shadow-lg">
-                儲存紀錄
-            </button>
-        </form>
-    </div>
+<body>
 
-    <div id="success-section" class="hidden max-w-md mx-auto text-center p-10 mt-10 animate__animated animate__bounceIn">
-        <div class="text-7xl mb-6">✅</div>
-        <h2 class="text-2xl font-bold text-slate-700 mb-2">紀錄成功！</h2>
-        <p class="text-slate-500 mb-8">AI 正在為你生成摘要與金句...<br>稍後可在 Notion 查看</p>
-        
-        <div class="space-y-3">
-            <button onclick="resetForm()" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-md active:scale-95 transition-all">
-                再記一本 ✍️
-            </button>
-            <button onclick="liff.closeWindow()" class="w-full bg-slate-200 text-slate-600 py-3 rounded-xl font-medium active:scale-95 transition-all">
-                關閉視窗
-            </button>
+<div class="container" id="form-container">
+    <h2>📚 新增閱讀紀錄</h2>
+    <form id="bookForm">
+        <div class="form-group">
+            <label>書名 (必填)</label>
+            <input type="text" id="title" required placeholder="請輸入書名">
         </div>
+        <div class="form-group">
+            <label>作者</label>
+            <input type="text" id="author" placeholder="請輸入作者">
+        </div>
+        <div class="form-group">
+            <label>類別</label>
+            <select id="category">
+                <option value="商業">商業</option>
+                <option value="小說">小說</option>
+                <option value="心理">心理</option>
+                <option value="自我成長">自我成長</option>
+                <option value="科技">科技</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>閱讀狀態</label>
+            <select id="status">
+                <option value="願望清單🧚">願望清單</option>
+                <option value="已購入🛒">已購入</option>
+                <option value="正在讀📖">正在讀</option>
+                <option value="閱讀完畢☑️" selected>完讀</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>推薦指數</label>
+            <select id="rating">
+                <option value="⭐⭐⭐⭐⭐">5 星</option>
+                <option value="⭐⭐⭐⭐">4 星</option>
+                <option value="⭐⭐⭐">3 星</option>
+                <option value="⭐⭐">2 星</option>
+                <option value="⭐">1 星</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>心得筆記</label>
+            <textarea id="review" rows="4" placeholder="寫下你的心得..."></textarea>
+        </div>
+        <button type="submit" id="submitBtn">儲存紀錄</button>
+        <div id="loading">AI 正在生成摘要與金句中...</div>
+    </form>
+</div>
+
+<div id="success-overlay">
+    <div class="check-icon">✓</div>
+    <h3 style="color: var(--primary)">紀錄成功！</h3>
+    <p style="color: var(--secondary); margin-bottom: 30px;">Notion 與 AI 已同步更新</p>
+    <div class="btn-group">
+        <button onclick="location.reload()">再記一本</button>
+        <button class="btn-outline" onclick="liff.closeWindow()">關閉頁面</button>
     </div>
+</div>
 
-    <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbw5_0RxsoEV8tPltSU3efk5fDVOnJvCljnpTDWWoCKf_RjBB9hFN-JBSrsmCsml2ftnCQ/exec";
+<script>
+    // 🔴 請替換為你的 GAS Web App URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzW5-j5zGgP1gP9OhiWqT5DAacmpy_aCdSE2I9aYQ3VrW2Xvj4AttsPHXWn0eC7lylbFg/exec";
+    const LIFF_ID = "2008731100-q3JK2BPf";
 
-        async function initializeLiff() {
-            await liff.init({ liffId: "2008731100-q3JK2BPf" });
-            if (!liff.isLoggedIn()) liff.login();
+    async function initializeLiff() {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+            liff.login();
         }
+    }
 
-        document.getElementById('bookForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "正在同步 AI 與 Notion...";
+    document.getElementById('bookForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        submitBtn.disabled = true;
+        loading.style.display = 'block';
 
-            const formData = {
-                type: "liff_submit",
+        const formData = {
+            action: 'liff_submit',
+            data: {
                 title: document.getElementById('title').value,
                 author: document.getElementById('author').value,
                 category: document.getElementById('category').value,
                 status: document.getElementById('status').value,
                 rating: document.getElementById('rating').value,
                 review: document.getElementById('review').value,
-                userId: liff.getDecodedIDToken().sub
-            };
-
-            try {
-                // 注意：這裡改用標準 POST 才能確認 GAS 是否真的收到了
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(formData)
-                });
-                
-                // 切換介面：隱藏表單，顯示成功畫面
-                document.getElementById('form-section').classList.add('hidden');
-                document.getElementById('success-section').classList.remove('hidden');
-            } catch (err) {
-                alert("傳輸發生錯誤，請檢查 GAS 部署權限");
-                btn.disabled = false;
-                btn.innerText = "儲存紀錄";
+                dateStr: new Date().toISOString().slice(0, 7) // YYYY-MM
             }
-        });
+        };
 
-        // 重置表單功能
-        function resetForm() {
-            document.getElementById('bookForm').reset();
-            document.getElementById('success-section').classList.add('hidden');
-            document.getElementById('form-section').classList.remove('hidden');
-            document.getElementById('submitBtn').disabled = false;
-            document.getElementById('submitBtn').innerText = "儲存紀錄";
+        try {
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors', // 由於 GAS CORS 限制，no-cors 無法取得回傳值，但能成功送出
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            // 因為 no-cors 模式，我們假設只要沒噴錯就是成功
+            // 如果要更精確，GAS 需處理 OPTIONS 預檢請求
+            showSuccess();
+        } catch (error) {
+            alert('儲存失敗：' + error);
+            submitBtn.disabled = false;
+            loading.style.display = 'none';
         }
+    });
 
-        initializeLiff();
-    </script>
+    function showSuccess() {
+        document.getElementById('success-overlay').style.display = 'flex';
+    }
+
+    initializeLiff();
+</script>
+
 </body>
 </html>
