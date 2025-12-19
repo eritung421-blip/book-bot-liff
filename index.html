@@ -1,42 +1,239 @@
-function doPost(e) {
-  if (!e || !e.postData) return ContentService.createTextOutput('No Data');
-  
-  const contents = JSON.parse(e.postData.contents);
-  
-  // 🔥 新增：判斷是否為來自 LIFF 的 JSON 請求
-  if (contents.action === "liff_add_book") {
-    // 呼叫你現有的存檔與 AI 邏輯
-    const result = createNotionPage({
-      title: contents.title,
-      author: contents.author,
-      category: contents.category,
-      status: contents.status,
-      review: contents.review,
-      rating: "⭐⭐⭐⭐⭐", // LIFF 也可以增加評分欄位
-      dateStr: ""
-    });
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eri's 書籍紀錄助手</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        :root {
+            --primary: #455A64;    /* 深岩灰 */
+            --secondary: #78909C;  /* 藍灰 */
+            --accent: #607D8B;     /* 強調色 */
+            --bg-light: #f4f7f9;   /* 背景淺灰藍 */
+            --white: #ffffff;
+            --success: #81C784;    /* 柔和綠 */
+        }
 
-    // 存檔成功後，主動發送訊息通知使用者 (需有 userId)
-    if (result.success && contents.userId) {
-       pushLineMessage(contents.userId, "🎉 透過 LIFF 成功紀錄《" + contents.title + "》！AI 摘要已同步至 Notion。");
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--white);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-align: center;
+            border-bottom: 2px solid #bbe1fa;
+            padding-bottom: 10px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: var(--secondary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #CFD8DC;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+        }
+
+        /* 星星評分樣式 */
+        .rating-container {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .rating-container input { display: none; }
+        .rating-container label {
+            cursor: pointer;
+            font-size: 30px;
+            color: #ddd;
+            transition: color 0.2s;
+            margin: 0;
+        }
+        .rating-container input:checked ~ label,
+        .rating-container label:hover,
+        .rating-container label:hover ~ label {
+            color: #FFC107;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        button:active { background-color: var(--accent); }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📝 紀錄新書本</h2>
     
-    return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
-  }
+    <div class="form-group">
+        <label>書名 *</label>
+        <input type="text" id="title" placeholder="例如：原子習慣">
+    </div>
 
-  // 原有的 LINE Bot 事件處理
-  try {
-    const body = contents;
-    if (!body.events || body.events.length === 0) return ContentService.createTextOutput('OK');
-    // ... 原本的 handleTextMessage 邏輯 ...
-  } catch (err) { ... }
-}
+    <div class="form-group">
+        <label>作者</label>
+        <input type="text" id="author" placeholder="作者姓名">
+    </div>
 
-// 輔助函式：主動推播訊息
-function pushLineMessage(userId, text) {
-  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
-    method: 'post',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN },
-    payload: JSON.stringify({ to: userId, messages: [{ type: 'text', text: text }] })
-  });
-}
+    <div class="form-group">
+        <label>類別</label>
+        <select id="category">
+            <option value="自我成長">自我成長</option>
+            <option value="商業">商業</option>
+            <option value="心理">心理</option>
+            <option value="科技">科技</option>
+            <option value="小說">小說</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>閱讀狀態</label>
+        <select id="status">
+            <option value="閱讀完畢☑️">閱讀完畢☑️</option>
+            <option value="正在讀📖">正在讀📖</option>
+            <option value="已購入🛒">已購入🛒</option>
+            <option value="願望清單🧚">願望清單🧚</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>推薦指數</label>
+        <div class="rating-container">
+            <input type="radio" name="rating" value="5" id="star5"><label for="star5">★</label>
+            <input type="radio" name="rating" value="4" id="star4"><label for="star4">★</label>
+            <input type="radio" name="rating" value="3" id="star3" checked><label for="star3">★</label>
+            <input type="radio" name="rating" value="2" id="star2"><label for="star2">★</label>
+            <input type="radio" name="rating" value="1" id="star1"><label for="star1">★</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>心得筆記</label>
+        <textarea id="review" rows="4" placeholder="寫下你的感想..."></textarea>
+    </div>
+
+    <button onclick="handleSubmit()">儲存到 Notion</button>
+</div>
+
+<div id="loading" class="loading-overlay">
+    <p>⚡ AI 處理中，請稍候...</p>
+</div>
+
+<script>
+    // ⚠️ 這裡要改：請填入你的 LIFF ID
+    const MY_LIFF_ID = "2008731100-q3JK2BPf"; 
+    // ⚠️ 這裡要改：請填入你的 GAS 部署網址
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwcDtom9HUfEHLrCVki6oAPYLoXjbzQdb6t69hLAlQTr4p4wTkYBUVCcK2DLVISIpY7Fg/exec"; 
+
+    async function initializeLiff() {
+        try {
+            await liff.init({ liffId: MY_LIFF_ID });
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            }
+        } catch (error) {
+            console.error('LIFF 初始化失敗', error);
+        }
+    }
+
+    async function handleSubmit() {
+        const title = document.getElementById('title').value;
+        if (!title) {
+            alert('請填寫書名！');
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'flex';
+
+        const ratingVal = document.querySelector('input[name="rating"]:checked').value;
+        const stars = "⭐".repeat(parseInt(ratingVal));
+
+        const formData = {
+            action: "liff_add_book",
+            title: title,
+            author: document.getElementById('author').value || "未知",
+            category: document.getElementById('category').value,
+            status: document.getElementById('status').value,
+            rating: stars,
+            review: document.getElementById('review').value,
+            userId: liff.getContext()?.userId || ""
+        };
+
+        try {
+            // 使用 no-cors 模式發送，或確保 GAS 有處理 OPTIONS 請求
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+
+            alert('✅ 紀錄成功！AI 正在為你生成摘要與圖卡...');
+            liff.closeWindow(); 
+        } catch (error) {
+            console.error('發送失敗', error);
+            alert('發送成功！(因跨網域限制可能回傳錯誤，請回 LINE 檢查是否收到通知)');
+            liff.closeWindow();
+        }
+    }
+
+    initializeLiff();
+</script>
+
+</body>
+</html>
