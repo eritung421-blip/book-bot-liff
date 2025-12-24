@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Eri's Reading Hub 📖</title>
@@ -20,48 +21,31 @@
             padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
             box-sizing: border-box; 
         }
-        
-        /* 標題保留粗體 */
         h2 { color: var(--primary); font-size: 1.3rem; text-align: center; margin-top: 0; font-weight: 600; letter-spacing: 1px; }
-
         .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
         .nav-tabs button { 
             flex: 1; padding: 10px; font-size: 0.85rem; border: none; border-radius: 10px; 
-            background-color: #ECEFF1; color: var(--secondary); cursor: pointer; 
-            font-weight: 400; /* Regular */
+            background-color: #ECEFF1; color: var(--secondary); cursor: pointer; font-weight: 400;
         }
         .nav-tabs button.active { background-color: var(--primary); color: white; font-weight: 600; }
-
         .form-group { margin-bottom: 15px; }
-        
-        /* 修改標籤為 Regular */
         label { display: block; font-size: 0.85rem; font-weight: 400; margin-bottom: 6px; color: var(--secondary); }
-        
-        /* 僅書名與作者並排 */
         .flex-row { display: flex; gap: 8px; }
-        .flex-row input { flex: 1; width: 50%; } /* 確保一半一半 */
-
-        /* 輸入框與按鈕均為 Regular */
+        .flex-row input { flex: 1; width: 50%; }
         input, select, textarea { 
             width: 100%; padding: 12px; border: 1px solid #ECEFF1; border-radius: 10px; 
             font-size: 0.95rem; box-sizing: border-box; background-color: #FAFAFA; 
             margin-bottom: 5px; font-weight: 400; color: var(--text);
         }
-        input::placeholder { color: #CFD8DC; }
-
         .book-card { border-bottom: 2px dashed #ECEFF1; margin-bottom: 25px; padding-bottom: 10px; }
-        
-        /* 按鈕調整為 Regular */
         button.main-btn { 
             width: 100%; padding: 14px; background-color: var(--primary); color: white; 
-            border: none; border-radius: 12px; font-size: 1rem; font-weight: 400; 
-            cursor: pointer; margin-top: 10px; 
+            border: none; border-radius: 12px; font-size: 1rem; font-weight: 400; cursor: pointer; margin-top: 10px; 
         }
         #addMoreBtn { 
             background-color: transparent; color: var(--secondary); border: 1px solid var(--secondary);
-            padding: 10px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 10px; font-weight: 400;
+            padding: 10px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 10px; font-weight: 400; width: 100%;
         }
-
         #loading-text { display: none; text-align: center; color: var(--secondary); font-size: 0.8rem; margin-top: 10px; font-weight: 400; }
         .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(0,0,0,0.1); border-top-color: var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 5px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -156,120 +140,98 @@
         <button type="button" id="updateSubmitBtn" class="main-btn" style="background-color: var(--accent);">更新紀錄</button>
     </div>
 
-    <div id="page-stats" style="display: none; text-align: center; padding-top: 20px;">
-        <p style="font-weight:400; color:var(--secondary);">本月已讀</p>
-        <h1 id="stat-month" style="font-size:3rem; font-weight:600; color:var(--primary); margin: 5px 0;">-</h1>
-        <p style="font-weight:400; color:var(--secondary);">今年累計：<span id="stat-year" style="color:var(--text);">-</span> 本</p>
-        <button onclick="loadStats()" style="background:none; border:none; color:var(--secondary); text-decoration:underline; font-size:0.8rem; margin-top:20px;">刷新數據</button>
+    <div id="page-stats" style="display: none; padding-bottom: 30px;">
+        <div style="display: flex; justify-content: space-around; margin-bottom: 20px; text-align: center;">
+            <div>
+                <p style="font-size: 0.8rem; color: var(--secondary); margin-bottom: 5px;">本月閱讀</p>
+                <h2 id="stat-month" style="margin: 0; color: var(--primary);">0</h2>
+            </div>
+            <div>
+                <p style="font-size: 0.8rem; color: var(--secondary); margin-bottom: 5px;">年度累計</p>
+                <h2 id="stat-year" style="margin: 0; color: var(--primary);">0</h2>
+            </div>
+        </div>
+        <label style="display:block; text-align: center; margin-bottom: 10px; font-size: 0.85rem;">📈 閱讀趨勢 (近半年)</label>
+        <div style="height: 200px; margin-bottom: 25px;"><canvas id="trendChart"></canvas></div>
+        <label style="display:block; text-align: center; margin-bottom: 10px; font-size: 0.85rem;">🎨 分類分佈</label>
+        <div style="height: 200px;"><canvas id="categoryChart"></canvas></div>
+        <button onclick="loadStats()" class="main-btn" style="background:none; border:1px solid var(--secondary); color:var(--secondary); font-size:0.8rem; margin-top:20px;">刷新統計數據</button>
     </div>
 
     <div id="loading-text"><span class="spinner"></span>處理中...</div>
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwbMYQ2KfkQ2Vf2YYn6hNqiCjJySo_6_Gabf152CRpGhRx0AJBE5f9sfw9fM5jM_XQTiw/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxTN9oBS7S9YCDYGFi502ZxRFmDDXAaaZJQFCkfWI7GDxVo5dmXPhpSy-aiDmW1qgH6Uw/exec";
+    let trendChart, categoryChart;
 
-    // 頁面切換
     function switchTab(tab) {
-        const pages = ['page-add', 'page-update', 'page-stats'];
-        const tabs = ['tab-add', 'tab-update', 'tab-stats'];
-        pages.forEach(p => document.getElementById(p).style.display = 'none');
-        tabs.forEach(t => document.getElementById(t).classList.remove('active'));
+        document.getElementById('page-add').style.display = tab === 'add' ? 'block' : 'none';
+        document.getElementById('page-update').style.display = tab === 'update' ? 'block' : 'none';
+        document.getElementById('page-stats').style.display = tab === 'stats' ? 'block' : 'none';
         
-        document.getElementById(`page-${tab}`).style.display = 'block';
-        document.getElementById(`tab-${tab}`).classList.add('active');
+        document.getElementById('tab-add').classList.toggle('active', tab === 'add');
+        document.getElementById('tab-update').classList.toggle('active', tab === 'update');
+        document.getElementById('tab-stats').classList.toggle('active', tab === 'stats');
 
         if(tab === 'update') loadBookList();
         if(tab === 'stats') loadStats();
     }
 
-    // --- 徹底修復「再加一本書」 ---
     document.getElementById('addMoreBtn').addEventListener('click', function() {
         const container = document.getElementById('book-list-container');
         const cards = container.getElementsByClassName('book-card');
-        const lastCard = cards[cards.length - 1];
-        const newCard = lastCard.cloneNode(true);
-        
-        // 清空新卡片的所有值
-        const inputs = newCard.querySelectorAll('input, textarea');
-        inputs.forEach(i => i.value = '');
-        const selects = newCard.querySelectorAll('select');
-        selects.forEach(s => s.selectedIndex = 0);
-        
+        const newCard = cards[0].cloneNode(true);
+        newCard.querySelectorAll('input, textarea').forEach(i => i.value = '');
+        newCard.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
         container.appendChild(newCard);
     });
 
-document.getElementById('submitBtn').onclick = async function() {
-    const submitBtn = this;
-    const loadingText = document.getElementById('loading-text');
-    const cards = document.querySelectorAll('.book-card');
-    const booksData = [];
+    // 1. 批量匯入書籍
+    document.getElementById('submitBtn').onclick = async function() {
+        const btn = this;
+        const loadingText = document.getElementById('loading-text');
+        const booksData = [];
 
-    // 1. 收集資料
-    cards.forEach(card => {
-        const title = card.querySelector('.field-title').value.trim();
-        if (title) {
-            booksData.push({
-                title: title,
-                originTitle: card.querySelector('.field-origin-title').value.trim(),
-                author: card.querySelector('.field-author').value.trim(),
-                originAuthor: card.querySelector('.field-origin-author').value.trim(),
-                category: card.querySelector('.field-category').value,
-                status: card.querySelector('.field-status').value,
-                rating: card.querySelector('.field-rating').value,
-                review: card.querySelector('.field-review').value.trim(),
-                dateStr: new Date().toISOString().slice(0, 7) // 格式: YYYY-MM
-            });
-        }
-    });
-
-    if (booksData.length === 0) return alert('請至少填寫一個書名！');
-
-    // 2. UI 狀態更新 (防止重複點擊)
-    submitBtn.disabled = true;
-    loadingText.style.display = 'block';
-    loadingText.innerHTML = '<span class="spinner"></span> 正在透過 AI 產生摘要與儲存...';
-
-    try {
-        // 3. 發送請求 (移除 no-cors)
-        const response = await fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'liff_submit_bulk',
-                data: booksData
-            })
+        document.querySelectorAll('.book-card').forEach(card => {
+            const title = card.querySelector('.field-title').value.trim();
+            if (title) {
+                booksData.push({
+                    title: title,
+                    originTitle: card.querySelector('.field-origin-title').value.trim(),
+                    author: card.querySelector('.field-author').value.trim(),
+                    originAuthor: card.querySelector('.field-origin-author').value.trim(),
+                    category: card.querySelector('.field-category').value,
+                    status: card.querySelector('.field-status').value,
+                    rating: card.querySelector('.field-rating').value,
+                    review: card.querySelector('.field-review').value.trim(),
+                    dateStr: new Date().toISOString().slice(0, 7)
+                });
+            }
         });
 
-        const result = await response.json();
+        if (booksData.length === 0) return alert('請填寫書名！');
+        btn.disabled = true;
+        loadingText.style.display = 'block';
 
-        // 4. 處理回傳結果
-        if (result.success) {
-            const d = result.data;
-            let report = `✅ 儲存完成！\n成功：${d.successCount} 本\n失敗：${d.failCount} 本\n\n`;
-            
-            d.details.forEach(item => {
-                report += `${item.status} ${item.title} ${item.error ? '(' + item.error + ')' : ''}\n`;
+        try {
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'liff_submit_bulk', data: booksData })
             });
+            const result = await response.json();
+            if (result.success) {
+                const d = result.data;
+                let report = `✅ 儲存完成！\n成功：${d.successCount} 本\n失敗：${d.failCount} 本\n`;
+                d.details.forEach(item => { report += `\n${item.status} ${item.title} ${item.error || ''}`; });
+                alert(report);
+                if (d.failCount === 0) location.reload();
+            } else { throw new Error(result.error); }
+        } catch (e) { alert('儲存失敗：' + e.message); }
+        finally { btn.disabled = false; loadingText.style.display = 'none'; }
+    };
 
-            alert(report);
-            
-            if (d.failCount === 0) {
-                location.reload(); // 全數成功才重新整理
-            }
-        } else {
-            throw new Error(result.error || '伺服器回傳異常');
-        }
-
-    } catch (e) {
-        console.error("提交失敗", e);
-        alert('儲存失敗，請檢查網路或 GAS 設定：\n' + e.message);
-    } finally {
-        submitBtn.disabled = false;
-        loadingText.style.display = 'none';
-    }
-};
-
-    // 載入補紀錄名單
+    // 2. 載入書籍選單
     async function loadBookList() {
         const select = document.getElementById('update-select-book');
         select.innerHTML = '<option>載入中...</option>';
@@ -280,8 +242,10 @@ document.getElementById('submitBtn').onclick = async function() {
         } catch(e) { select.innerHTML = '<option>目前無書籍</option>'; }
     }
 
-    // 更新心得提交
+    // 3. 更新心得 (移除 no-cors 以檢查回傳)
     document.getElementById('updateSubmitBtn').onclick = async function() {
+        const btn = this;
+        const loadingText = document.getElementById('loading-text');
         const payload = {
             action: 'update_review',
             data: {
@@ -290,73 +254,57 @@ document.getElementById('submitBtn').onclick = async function() {
                 review: document.getElementById('update-review').value
             }
         };
-        document.getElementById('loading-text').style.display = 'block';
-        await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-        alert('更新成功！');
-        location.reload();
+
+        btn.disabled = true;
+        loadingText.style.display = 'block';
+
+        try {
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await response.json();
+            if (result.success) { alert('更新成功！'); location.reload(); }
+            else { alert('更新失敗：' + result.error); }
+        } catch(e) { alert('連線失敗：' + e.message); }
+        finally { btn.disabled = false; loadingText.style.display = 'none'; }
     };
 
-    // 統計數據載入 (更新版)
-async function loadStats() {
-    const monthEl = document.getElementById('stat-month');
-    const yearEl = document.getElementById('stat-year');
-    const loadingText = document.getElementById('loading-text');
-
-    try {
-        monthEl.innerText = '...';
-        yearEl.innerText = '...';
-        
-        // 1. 發送請求 (移除 no-cors 才能讀取回傳值)
-        const res = await fetch(`${GAS_URL}?action=get_stats_raw`);
-        const result = await res.json();
-
-        if (result.success) {
+    // 4. 統計圖表邏輯
+    async function loadStats() {
+        const loadingText = document.getElementById('loading-text');
+        loadingText.style.display = 'block';
+        try {
+            const res = await fetch(`${GAS_URL}?action=get_stats_raw`);
+            const result = await res.json();
             const stats = result.data;
-            
-            // 2. 更新數字摘要 
-            monthEl.innerText = stats.summary.thisMonth;
-            yearEl.innerText = stats.summary.thisYear;
 
-            // 3. (進階) 如果你想顯示分類分佈，可以在這裡擴充 UI
-            console.log("分類分佈數據:", stats.categoryDist);
-            renderCategoryStats(stats.categoryDist);
-        } else {
-            alert('數據讀取失敗：' + result.error);
-        }
-    } catch (e) {
-        console.error("統計載入失敗", e);
-        alert('連線失敗，請檢查 GAS 是否已正確發布');
-    } finally {
-        loadingText.style.display = 'none';
-    }
-}
+            document.getElementById('stat-month').innerText = stats.summary.thisMonth;
+            document.getElementById('stat-year').innerText = stats.summary.thisYear;
 
-// 輔助函式：動態生成分類統計清單
-function renderCategoryStats(dist) {
-    // 假設你在 HTML 中有一個 id="category-list" 的容器
-    const container = document.getElementById('page-stats');
-    let html = '<div style="margin-top:20px; text-align:left; font-size:0.85rem;">';
-    html += '<p style="font-weight:bold; color:var(--secondary);">📚 分類佔比</p>';
-    
-    for (const [cat, count] of Object.entries(dist)) {
-        html += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <span>${cat}</span>
-                    <span style="font-weight:600;">${count} 本</span>
-                 </div>`;
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(trendCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(stats.trend),
+                    datasets: [{ label: '冊數', data: Object.values(stats.trend), backgroundColor: '#78909C', borderRadius: 5 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            const catCtx = document.getElementById('categoryChart').getContext('2d');
+            if(categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(stats.categoryDist),
+                    datasets: [{ data: Object.values(stats.categoryDist), backgroundColor: ['#81C784', '#4DD0E1', '#FFD54F', '#BA68C8', '#E57373'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '60%' }
+            });
+        } catch (e) { alert('統計載入失敗'); }
+        finally { loadingText.style.display = 'none'; }
     }
-    html += '</div>';
-    
-    // 移除舊的統計列表(若有)，再加入新的
-    const oldList = document.getElementById('dynamic-cat-list');
-    if (oldList) oldList.remove();
-    
-    const div = document.createElement('div');
-    div.id = 'dynamic-cat-list';
-    div.innerHTML = html;
-    container.appendChild(div);
-}
+
     liff.init({ liffId: "2008731100-q3JK2BPf" });
 </script>
-
 </body>
 </html>
