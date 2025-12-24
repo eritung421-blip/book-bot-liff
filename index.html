@@ -167,7 +167,7 @@
 </div>
 
 <script>
-    const GAS_URL = "您的GAS網址";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbybpWamiOXrCpGBYPs-kkL_E1NUP5I3VulOV9H83I8UmC1Jl3cNmb24p8gPO3e5SlHq3Q/exec";
 
     // 頁面切換
     function switchTab(tab) {
@@ -199,32 +199,75 @@
         container.appendChild(newCard);
     });
 
-    // 提交新增
-    document.getElementById('submitBtn').onclick = async function() {
-        const cards = document.querySelectorAll('.book-card');
-        const booksData = [];
-        cards.forEach(card => {
-            const title = card.querySelector('.field-title').value;
-            if (title) {
-                booksData.push({
-                    title: title,
-                    originTitle: card.querySelector('.field-origin-title').value,
-                    author: card.querySelector('.field-author').value,
-                    originAuthor: card.querySelector('.field-origin-author').value,
-                    category: card.querySelector('.field-category').value,
-                    status: card.querySelector('.field-status').value,
-                    rating: card.querySelector('.field-rating').value,
-                    review: card.querySelector('.field-review').value,
-                    dateStr: new Date().toISOString().slice(0, 7)
-                });
-            }
+document.getElementById('submitBtn').onclick = async function() {
+    const submitBtn = this;
+    const loadingText = document.getElementById('loading-text');
+    const cards = document.querySelectorAll('.book-card');
+    const booksData = [];
+
+    // 1. 收集資料
+    cards.forEach(card => {
+        const title = card.querySelector('.field-title').value.trim();
+        if (title) {
+            booksData.push({
+                title: title,
+                originTitle: card.querySelector('.field-origin-title').value.trim(),
+                author: card.querySelector('.field-author').value.trim(),
+                originAuthor: card.querySelector('.field-origin-author').value.trim(),
+                category: card.querySelector('.field-category').value,
+                status: card.querySelector('.field-status').value,
+                rating: card.querySelector('.field-rating').value,
+                review: card.querySelector('.field-review').value.trim(),
+                dateStr: new Date().toISOString().slice(0, 7) // 格式: YYYY-MM
+            });
+        }
+    });
+
+    if (booksData.length === 0) return alert('請至少填寫一個書名！');
+
+    // 2. UI 狀態更新 (防止重複點擊)
+    submitBtn.disabled = true;
+    loadingText.style.display = 'block';
+    loadingText.innerHTML = '<span class="spinner"></span> 正在透過 AI 產生摘要與儲存...';
+
+    try {
+        // 3. 發送請求 (移除 no-cors)
+        const response = await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'liff_submit_bulk',
+                data: booksData
+            })
         });
-        if (booksData.length === 0) return alert('請填寫書名');
-        document.getElementById('loading-text').style.display = 'block';
-        await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'liff_submit_bulk', data: booksData }) });
-        alert('儲存成功！');
-        location.reload();
-    };
+
+        const result = await response.json();
+
+        // 4. 處理回傳結果
+        if (result.success) {
+            const d = result.data;
+            let report = `✅ 儲存完成！\n成功：${d.successCount} 本\n失敗：${d.failCount} 本\n\n`;
+            
+            d.details.forEach(item => {
+                report += `${item.status} ${item.title} ${item.error ? '(' + item.error + ')' : ''}\n`;
+            });
+
+            alert(report);
+            
+            if (d.failCount === 0) {
+                location.reload(); // 全數成功才重新整理
+            }
+        } else {
+            throw new Error(result.error || '伺服器回傳異常');
+        }
+
+    } catch (e) {
+        console.error("提交失敗", e);
+        alert('儲存失敗，請檢查網路或 GAS 設定：\n' + e.message);
+    } finally {
+        submitBtn.disabled = false;
+        loadingText.style.display = 'none';
+    }
+};
 
     // 載入補紀錄名單
     async function loadBookList() {
@@ -253,17 +296,66 @@
         location.reload();
     };
 
-    // 統計數據載入
-    async function loadStats() {
-        try {
-            const res = await fetch(GAS_URL + "?action=get_stats");
-            const result = await res.json();
-            document.getElementById('stat-month').innerText = result.month;
-            document.getElementById('stat-year').innerText = result.year;
-        } catch(e) { console.log("統計載入失敗"); }
-    }
+    // 統計數據載入 (更新版)
+async function loadStats() {
+    const monthEl = document.getElementById('stat-month');
+    const yearEl = document.getElementById('stat-year');
+    const loadingText = document.getElementById('loading-text');
 
-    liff.init({ liffId: "您的LIFF_ID" });
+    try {
+        monthEl.innerText = '...';
+        yearEl.innerText = '...';
+        
+        // 1. 發送請求 (移除 no-cors 才能讀取回傳值)
+        const res = await fetch(`${GAS_URL}?action=get_stats_raw`);
+        const result = await res.json();
+
+        if (result.success) {
+            const stats = result.data;
+            
+            // 2. 更新數字摘要 
+            monthEl.innerText = stats.summary.thisMonth;
+            yearEl.innerText = stats.summary.thisYear;
+
+            // 3. (進階) 如果你想顯示分類分佈，可以在這裡擴充 UI
+            console.log("分類分佈數據:", stats.categoryDist);
+            renderCategoryStats(stats.categoryDist);
+        } else {
+            alert('數據讀取失敗：' + result.error);
+        }
+    } catch (e) {
+        console.error("統計載入失敗", e);
+        alert('連線失敗，請檢查 GAS 是否已正確發布');
+    } finally {
+        loadingText.style.display = 'none';
+    }
+}
+
+// 輔助函式：動態生成分類統計清單
+function renderCategoryStats(dist) {
+    // 假設你在 HTML 中有一個 id="category-list" 的容器
+    const container = document.getElementById('page-stats');
+    let html = '<div style="margin-top:20px; text-align:left; font-size:0.85rem;">';
+    html += '<p style="font-weight:bold; color:var(--secondary);">📚 分類佔比</p>';
+    
+    for (const [cat, count] of Object.entries(dist)) {
+        html += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <span>${cat}</span>
+                    <span style="font-weight:600;">${count} 本</span>
+                 </div>`;
+    }
+    html += '</div>';
+    
+    // 移除舊的統計列表(若有)，再加入新的
+    const oldList = document.getElementById('dynamic-cat-list');
+    if (oldList) oldList.remove();
+    
+    const div = document.createElement('div');
+    div.id = 'dynamic-cat-list';
+    div.innerHTML = html;
+    container.appendChild(div);
+}
+    liff.init({ liffId: "2008731100-q3JK2BPf" });
 </script>
 
 </body>
