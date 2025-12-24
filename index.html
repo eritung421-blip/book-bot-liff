@@ -7,68 +7,36 @@
     <title>Eri's Reading Hub 📖</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        :root { 
-            --primary: #455A64; --secondary: #78909C; --accent: #81C784; 
-            --bg: #F5F7F8; --white: #FFFFFF; --text: #37474F; 
-        }
-        body { 
-            font-family: -apple-system, "Noto Sans TC", sans-serif; 
-            background-color: var(--bg); color: var(--text); 
-            margin: 0; padding: 20px; display: flex; justify-content: center; 
-        }
-        .container { 
-            width: 100%; max-width: 450px; background: var(--white); 
-            padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            box-sizing: border-box; 
-        }
-        h2 { color: var(--primary); font-size: 1.3rem; text-align: center; margin-top: 0; font-weight: 600; letter-spacing: 1px; }
-        
-        /* 導覽列與捲動優化 */
+        :root { --primary: #455A64; --secondary: #78909C; --accent: #81C784; --bg: #F5F7F8; --white: #FFFFFF; --text: #37474F; }
+        body { font-family: -apple-system, "Noto Sans TC", sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 480px; background: var(--white); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box; }
+        h2 { color: var(--primary); font-size: 1.2rem; text-align: center; margin-top: 0; font-weight: 600; }
         .nav-tabs { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 20px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         .nav-tabs::-webkit-scrollbar { display: none; }
-        .nav-tabs button { 
-            flex: 0 0 auto; padding: 10px 15px; font-size: 0.85rem; border: none; border-radius: 10px; 
-            background-color: #ECEFF1; color: var(--secondary); cursor: pointer; font-weight: 400;
-        }
+        .nav-tabs button { flex: 0 0 auto; padding: 10px 15px; font-size: 0.85rem; border: none; border-radius: 10px; background-color: #ECEFF1; color: var(--secondary); cursor: pointer; }
         .nav-tabs button.active { background-color: var(--primary); color: white; font-weight: 600; }
-
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.85rem; font-weight: 400; margin-bottom: 6px; color: var(--secondary); }
-        .flex-row { display: flex; gap: 8px; }
-        .flex-row input { flex: 1; width: 50%; }
-
-        /* 下拉選單 UI 修正：增加內距防止圖示太擠 */
-        select { 
-            appearance: none; width: 100%; padding: 12px; padding-right: 40px !important; 
-            border: 1px solid #ECEFF1; border-radius: 10px; font-size: 0.95rem; 
-            box-sizing: border-box; background-color: #FAFAFA; font-weight: 400; color: var(--text);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2378909C'%3E%3Cpath d='M2 4l4 4 4-4H2z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: calc(100% - 15px) center;
+        label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: var(--secondary); font-weight: 500; }
+        .flex-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ECEFF1; border-radius: 10px; font-size: 0.95rem; box-sizing: border-box; background-color: #FAFAFA; color: var(--text); }
+        select { appearance: none; padding-right: 40px !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2378909C'%3E%3Cpath d='M2 4l4 4 4-4H2z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: calc(100% - 15px) center; }
+        .main-btn { width: 100%; padding: 14px; background-color: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-top: 10px; font-weight: 500; }
+        .chart-container { height: 230px; margin-bottom: 25px; position: relative; border: 1px solid #F0F0F0; border-radius: 15px; padding: 10px; }
+        #stats-loader { display: none; text-align: center; padding: 60px 0; }
+        #cardPreview { width: 100%; border-radius: 15px; border: 1px solid #eee; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .search-box { margin-bottom: 10px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2378909C'%3E%3Cpath d='M11.7 10.3l-2.4-2.4c.4-.6.7-1.3.7-2.1 0-1.9-1.6-3.5-3.5-3.5S3 3.9 3 5.8s1.6 3.5 3.5 3.5c.8 0 1.5-.3 2.1-.7l2.4 2.4 1.4-1.4zM4.5 5.8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 12px center; padding-left: 38px; }
+        #loading-text { display: none; text-align: center; color: var(--secondary); font-size: 0.8rem; margin-top: 10px; }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 3px solid rgba(0,0,0,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .tag-container { 
+            display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; 
+            padding: 12px; background: #FAFAFA; border-radius: 12px; border: 1px solid #ECEFF1;
         }
-
-        input, textarea { 
-            width: 100%; padding: 12px; border: 1px solid #ECEFF1; border-radius: 10px; 
-            font-size: 0.95rem; box-sizing: border-box; background-color: #FAFAFA; 
-            margin-bottom: 5px; font-weight: 400; color: var(--text);
+        .tag-chip { 
+            display: flex; align-items: center; background-color: #ECEFF1; 
+            color: var(--text); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; 
         }
-
-        .book-card { border-bottom: 2px dashed #ECEFF1; margin-bottom: 25px; padding-bottom: 10px; }
-        button.main-btn { 
-            width: 100%; padding: 14px; background-color: var(--primary); color: white; 
-            border: none; border-radius: 12px; font-size: 1rem; font-weight: 400; cursor: pointer; margin-top: 10px; 
+        .tag-delete { 
+            margin-left: 8px; cursor: pointer; color: #EF5350; font-weight: bold; font-size: 1rem;
         }
-        
-        /* 管理頁面標籤樣式 */
-        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
-        .tag { background: #ECEFF1; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; color: var(--text); }
-        .tag span { margin-left: 8px; cursor: pointer; color: #EF5350; font-weight: bold; }
-
-        /* 分享預覽圖 */
-        #cardPreview { width: 100%; border-radius: 15px; border: 1px solid #ECEFF1; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-
-        /* 通用與局部載入動畫 */
-        #loading-text, .local-loader { display: none; text-align: center; color: var(--secondary); font-size: 0.8rem; margin-top: 10px; font-weight: 400; }
-        .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(0,0,0,0.1); border-top-color: var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 5px; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -88,218 +56,293 @@
     <div id="page-add">
         <div id="book-list-container">
             <div class="book-card">
-                <div class="form-group"><label>書名</label><input type="text" class="field-title" placeholder="中文書名"></div>
-                <div class="form-group"><label>分類</label><select class="field-category" id="add-category-select"></select></div>
-                <div class="form-group"><label>閱讀狀態</label><select class="field-status">
+                <label>書名 (中文 / 原文)</label>
+                <div class="flex-row">
+                    <input type="text" class="field-title" placeholder="中文書名">
+                    <input type="text" class="field-origin-title" placeholder="原文/Link">
+                </div>
+                <label>作者 (譯者 / 原文作者)</label>
+                <div class="flex-row">
+                    <input type="text" class="field-author" placeholder="譯者/主編">
+                    <input type="text" class="field-origin-author" placeholder="原文作者">
+                </div>
+                <div class="flex-row">
+                    <div style="flex:1;"><label>分類</label><select class="field-category" id="add-category-select"></select></div>
+                    <div style="flex:1;"><label>評分</label><select class="field-rating">
+                        <option value="尚未評分">尚未評分</option>
+                        <option value="⭐⭐⭐⭐⭐">5星</option><option value="⭐⭐⭐⭐">4星</option>
+                        <option value="⭐⭐⭐">3星</option><option value="⭐⭐">2星</option><option value="⭐">1星</option>
+                    </select></div>
+                </div>
+                <label>閱讀狀態</label>
+                <select class="field-status">
                     <option value="閱讀完畢☑️">閱讀完畢☑️</option>
                     <option value="正在讀📖">正在讀📖</option>
                     <option value="願望清單🧚">願望清單🧚</option>
-                </select></div>
-                <div class="form-group"><label>心得 (選填)</label><textarea class="field-review" rows="2" placeholder="初步想法..."></textarea></div>
+                </select>
+                <label style="margin-top:8px;">初步想法</label>
+                <textarea class="field-review" rows="2" placeholder="簡短的心得..."></textarea>
             </div>
         </div>
-        <button type="button" id="submitBtn" class="main-btn">確認儲存至 Notion</button>
+        <button type="button" onclick="submitBulk()" class="main-btn">確認儲存至 Notion</button>
     </div>
 
     <div id="page-update" style="display: none;">
-        <div class="form-group"><label>1. 選擇書籍</label><select id="update-select-book"></select></div>
-        <div class="form-group"><label>2. 補記心得</label><textarea id="update-review" rows="5" placeholder="輸入詳細心得..."></textarea></div>
-        <button type="button" onclick="submitUpdateReview()" class="main-btn" style="background-color: var(--accent);">更新紀錄</button>
+        <label>搜尋書籍</label>
+        <input type="text" class="search-box" placeholder="搜尋書名或作者..." oninput="filterBooks(this, 'update-select-book')">
+        <select id="update-select-book"></select>
+        <label style="margin-top:10px;">補寫詳細心得</label>
+        <textarea id="update-review-text" rows="6" placeholder="寫下你的深度讀後感..."></textarea>
+        <button type="button" onclick="submitSingleReview()" class="main-btn" style="background-color: var(--accent);">更新紀錄</button>
     </div>
 
-    <div id="page-stats" style="display: none; padding-bottom: 30px;">
-        <div class="form-group">
-            <label>篩選統計月份</label>
-            <input type="month" id="stats-month-picker" onchange="loadStats()">
-        </div>
-        <div id="stats-loader" class="local-loader" style="padding: 50px 0;">
-            <span class="spinner"></span><p>正在計算統計數據...</p>
-        </div>
+    <div id="page-stats" style="display: none;">
+        <div class="form-group"><label>切換統計月份</label><input type="month" id="stats-month-picker" onchange="loadStats()"></div>
+        <div id="stats-loader"><span class="spinner"></span>數據計算中...</div>
         <div id="stats-content">
             <div style="display: flex; justify-content: space-around; margin-bottom: 20px; text-align: center;">
-                <div><p style="font-size: 0.7rem; color: var(--secondary);">選定月閱讀</p><h2 id="stat-month">0</h2></div>
-                <div><p style="font-size: 0.7rem; color: var(--secondary);">年度累計</p><h2 id="stat-year">0</h2></div>
+                <div><p style="font-size: 0.7rem;">月度閱讀</p><h2 id="stat-month">0</h2></div>
+                <div><p style="font-size: 0.7rem;">年度累計</p><h2 id="stat-year">0</h2></div>
             </div>
-            <div style="height: 220px;"><canvas id="categoryChart"></canvas></div>
+            <label style="text-align:center;">📊 閱讀趨勢</label>
+            <div class="chart-container"><canvas id="trendChart"></canvas></div>
+            <label style="text-align:center;">🎨 分類佔比</label>
+            <div class="chart-container"><canvas id="categoryChart"></canvas></div>
         </div>
     </div>
 
     <div id="page-share" style="display: none;">
-        <label>選擇要分享的書</label>
-        <select id="share-select-book" onchange="drawShareCard()"></select>
-        <canvas id="shareCanvas" width="1080" height="1920" style="display:none;"></canvas>
-        <img id="cardPreview" alt="生成的卡片">
-        <button class="main-btn" onclick="shareToSystem()" style="background: var(--accent);">📲 直接分享至 IG 限動</button>
+        <label>1. 搜尋並選取書籍</label>
+        <input type="text" class="search-box" placeholder="輸入關鍵字..." oninput="filterBooks(this, 'share-select-book')">
+        <select id="share-select-book" onchange="onShareSelectionChange()"></select>
+        
+        <label style="margin-top:10px;">2. 修改分享心得 (自動帶入 Notion 內頁資料)</label>
+        <textarea id="share-text-editor" rows="3" oninput="drawCanvasCard()" placeholder="寫下想分享的金句..."></textarea>
+        
+        <div style="text-align:center;">
+            <canvas id="shareCanvas" width="1080" height="1920" style="display:none;"></canvas>
+            <img id="cardPreview" alt="生成的卡片">
+            <button class="main-btn" onclick="shareToSystem()" style="background: var(--accent);">📲 分享至 IG 限時動態</button>
+        </div>
     </div>
 
     <div id="page-manage" style="display: none;">
-        <label>現有分類 (點擊 × 刪除)</label>
+        <label>現有分類 (點擊 × 移除)</label>
         <div id="tag-list" class="tag-container"></div>
         <div class="flex-row">
             <input type="text" id="new-tag-input" placeholder="新分類名稱">
-            <button onclick="addNewTag()" style="padding:0 15px; border-radius:10px; border:none; background:var(--primary); color:white;">+</button>
+            <button onclick="addLocalTag()" style="padding:0 15px; background:var(--primary); color:white; border:none; border-radius:10px;">+</button>
         </div>
-        <button class="main-btn" onclick="syncCategoriesToNotion()">🔄 同步設定至 Notion</button>
+        <button class="main-btn" onclick="syncToNotion()" style="background:var(--accent);">🚀 同步分類至 Notion</button>
     </div>
 
-    <div id="loading-text"><span class="spinner"></span>處理中...</div>
+    <div id="loading-text"><span class="spinner"></span> 處理中...</div>
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxhIlp1aGQGL54ajj3lwDQx9CjYCVrSJ1iYenB42ngJybf9g0hvivjAu8CeyEohkwAJDg/exec";
-    let categoryChart, bookList = [], currentCategories = ["自我成長", "心理學", "文學小說", "商業理財"];
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzgAb1yf5Ny3i85DMq86CRubqQYe_ml-M7Bckbf6ArJIQs7DAcCw9x76SyHwAfOufVeCw/exec";
+    let trendChart, categoryChart, bookList = [], categories = ["自我成長", "心理學", "文學小說", "商業理財"];
 
-    // 初始化月份
     document.getElementById('stats-month-picker').value = new Date().toISOString().slice(0, 7);
 
     function switchTab(tab) {
         ['add', 'update', 'stats', 'share', 'manage'].forEach(t => {
-            document.getElementById(`page-${t}`).style.display = t === tab ? 'block' : 'none';
+            document.getElementById(`page-${t}`).style.display = (t === tab) ? 'block' : 'none';
             document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
         });
         if(tab === 'manage') renderTags();
-        if(tab === 'share' || tab === 'update') fetchBooksForSelect();
+        if(tab === 'share' || tab === 'update') fetchBooks();
         if(tab === 'stats') loadStats();
-        if(tab === 'add') updateAddPageSelect();
+        if(tab === 'add') populateCategorySelect();
     }
 
-    // --- 分類管理 ---
-    function renderTags() {
-        document.getElementById('tag-list').innerHTML = currentCategories.map((c, i) => `<div class="tag">${c}<span onclick="removeTag(${i})">×</span></div>`).join('');
-    }
-    function addNewTag() {
-        const input = document.getElementById('new-tag-input');
-        if(input.value) { currentCategories.push(input.value); input.value = ''; renderTags(); }
-    }
-    function removeTag(i) { currentCategories.splice(i, 1); renderTags(); }
-    function updateAddPageSelect() {
-        document.getElementById('add-category-select').innerHTML = currentCategories.map(c => `<option value="${c}">${c}</option>`).join('');
-    }
-    async function syncCategoriesToNotion() {
-        document.getElementById('loading-text').style.display = 'block';
-        try {
-            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'sync_categories', data: currentCategories }) });
-            const result = await res.json();
-            alert(result.success ? '✅ Notion 分類同步成功！' : '❌ 同步失敗');
-        } catch(e) { alert('同步出錯'); }
-        document.getElementById('loading-text').style.display = 'none';
+    function filterBooks(input, selectId) {
+        const filter = input.value.toLowerCase();
+        const select = document.getElementById(selectId);
+        select.innerHTML = bookList
+            .filter(b => b.title.toLowerCase().includes(filter) || b.author.toLowerCase().includes(filter))
+            .map(b => `<option value="${b.id}">${b.title}</option>`).join('');
+        if(selectId === 'share-select-book') onShareSelectionChange();
     }
 
-    // --- 書籍清單獲取 ---
-    async function fetchBooksForSelect() {
-        try {
-            const res = await fetch(GAS_URL + "?action=get_book_list");
-            const result = await res.json();
-            bookList = result.data;
-            const options = bookList.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
-            document.getElementById('share-select-book').innerHTML = options;
-            document.getElementById('update-select-book').innerHTML = options;
-            if(bookList.length > 0) drawShareCard();
-        } catch(e) { console.error("抓取書籍失敗"); }
-    }
-
-    // --- 統計邏輯 (優化處理中位置) ---
-    async function loadStats() {
-        const targetMonth = document.getElementById('stats-month-picker').value;
-        const loader = document.getElementById('stats-loader');
-        const content = document.getElementById('stats-content');
+    // 🔥 升級版：深度抓取心得後再畫圖
+    async function onShareSelectionChange() {
+        const id = document.getElementById('share-select-book').value;
+        const loader = document.getElementById('loading-text');
+        if(!id) return;
         
         loader.style.display = 'block';
-        content.style.display = 'none';
-
         try {
-            const res = await fetch(`${GAS_URL}?action=get_stats_raw&month=${targetMonth}`);
+            const res = await fetch(`${GAS_URL}?action=get_book_detail&pageId=${id}`);
             const result = await res.json();
-            const stats = result.data;
+            if (result.success) {
+                const book = result.data;
+                // 更新全域書單中對應的 review 與 aiSummary 資料
+                const idx = bookList.findIndex(b => b.id === id);
+                if(idx !== -1) bookList[idx] = book;
 
-            document.getElementById('stat-month').innerText = stats.summary.thisMonth;
-            document.getElementById('stat-year').innerText = stats.summary.thisYear;
-
-            const ctx = document.getElementById('categoryChart').getContext('2d');
-            if(categoryChart) categoryChart.destroy();
-            categoryChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(stats.categoryDist),
-                    datasets: [{ data: Object.values(stats.categoryDist), backgroundColor: ['#81C784', '#4DD0E1', '#FFD54F', '#BA68C8', '#E57373'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
-            });
-            content.style.display = 'block';
-        } catch (e) { alert('統計載入失敗'); }
+                // 組合心得帶入編輯框
+                const combinedText = book.review || "這是一本值得深度思考的好書。";
+                document.getElementById('share-text-editor').value = combinedText;
+                drawCanvasCard();
+            }
+        } catch (e) { console.error("抓取細節失敗", e); }
         finally { loader.style.display = 'none'; }
     }
 
-    // --- IG 分享卡 Canvas ---
-    function drawShareCard() {
+    // 🎨 畫布邏輯：新增月份與星級
+    function drawCanvasCard() {
         const canvas = document.getElementById('shareCanvas');
         const ctx = canvas.getContext('2d');
-        const bookId = document.getElementById('share-select-book').value;
-        const book = bookList.find(b => b.id === bookId);
+        const id = document.getElementById('share-select-book').value;
+        const book = bookList.find(b => b.id === id);
+        const userReview = document.getElementById('share-text-editor').value;
 
+        // 背景與縮小標題
         ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, 1080, 1920);
-        ctx.fillStyle = "#455A64"; ctx.fillRect(0, 0, 1080, 450);
-        ctx.fillStyle = "#FFFFFF"; ctx.font = "bold 55px sans-serif"; ctx.fillText("ERI'S READING LOG", 100, 230);
-        ctx.fillStyle = "#37474F"; ctx.font = "bold 95px sans-serif"; ctx.fillText(book?.title || "未選書籍", 100, 620);
-        ctx.font = "45px sans-serif"; ctx.fillStyle = "#78909C"; ctx.fillText("Author: " + (book?.author || "未知"), 100, 720);
-        ctx.fillStyle = "#F5F7F8"; ctx.fillRect(100, 850, 880, 400);
-        ctx.fillStyle = "#455A64"; ctx.font = "italic 40px sans-serif";
-        const summary = (book?.review || "這是一本值得深度思考的好書。").substring(0, 80) + "...";
-        ctx.fillText(summary, 130, 950, 820);
+        ctx.fillStyle = "#455A64"; ctx.fillRect(0, 0, 1080, 420);
+
+        ctx.fillStyle = "#FFFFFF"; 
+        ctx.font = "bold 45px sans-serif";
+        ctx.fillText("ERI'S READING LOG", 100, 180);
+        
+        // 🔥 右上角繪製：閱讀月份
+        ctx.font = "40px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(book?.date || "", 980, 180);
+        ctx.textAlign = "left";
+
+        // 主書名與原文書名
+        ctx.fillStyle = "#37474F"; ctx.font = "bold 95px sans-serif";
+        ctx.fillText(book?.title || "Book Title", 100, 600);
+        
+        ctx.fillStyle = "#90A4AE"; ctx.font = "45px sans-serif";
+        ctx.fillText(book?.originTitle || "", 100, 690);
+
+        // 作者與星級
+        ctx.fillStyle = "#78909C"; ctx.font = "50px sans-serif";
+        ctx.fillText("by " + (book?.author || "Unknown"), 100, 800);
+        
+        // 🔥 繪製金色星級
+        ctx.fillStyle = "#FFB300"; 
+        ctx.font = "55px sans-serif";
+        ctx.fillText(book?.rating || "", 100, 890);
+
+        // 心得區塊
+        ctx.fillStyle = "#F5F7F8"; ctx.fillRect(100, 1000, 880, 600);
+        ctx.fillStyle = "#455A64"; ctx.font = "italic 42px sans-serif";
+        wrapCanvasText(ctx, userReview, 140, 1130, 800, 65);
+
         document.getElementById('cardPreview').src = canvas.toDataURL("image/png");
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+        let chars = text.split(''); let line = '';
+        for(let n = 0; n < chars.length; n++) {
+            let testLine = line + chars[n];
+            if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+                ctx.fillText(line, x, y); line = chars[n]; y += lineHeight;
+            } else { line = testLine; }
+        }
+        ctx.fillText(line, x, y);
+    }
+
+    async function loadStats() {
+        const month = document.getElementById('stats-month-picker').value;
+        const loader = document.getElementById('stats-loader');
+        const content = document.getElementById('stats-content');
+        loader.style.display = 'block'; content.style.display = 'none';
+        try {
+            const res = await fetch(`${GAS_URL}?action=get_stats_raw&month=${month}`);
+            const json = await res.json();
+            const d = json.data;
+            document.getElementById('stat-month').innerText = d.summary.thisMonth;
+            document.getElementById('stat-year').innerText = d.summary.thisYear;
+            const tCtx = document.getElementById('trendChart').getContext('2d');
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(tCtx, {
+                type: 'bar',
+                data: { labels: Object.keys(d.trend), datasets: [{ data: Object.values(d.trend), backgroundColor: '#78909C', borderRadius: 5 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+            const cCtx = document.getElementById('categoryChart').getContext('2d');
+            if(categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(cCtx, {
+                type: 'doughnut',
+                data: { labels: Object.keys(d.categoryDist), datasets: [{ data: Object.values(d.categoryDist), backgroundColor: ['#81C784', '#4DD0E1', '#FFD54F', '#BA68C8'] }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+            });
+            content.style.display = 'block';
+        } catch(e) { console.error("Stats Error", e); }
+        finally { loader.style.display = 'none'; }
+    }
+
+    async function fetchBooks() {
+        const res = await fetch(GAS_URL + "?action=get_book_list");
+        const json = await res.json();
+        bookList = json.data;
+        const options = bookList.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
+        document.getElementById('update-select-book').innerHTML = options;
+        document.getElementById('share-select-book').innerHTML = options;
+        if(bookList.length > 0) onShareSelectionChange();
+    }
+
+    async function submitBulk() {
+        const data = [];
+        document.querySelectorAll('.book-card').forEach(c => {
+            const t = c.querySelector('.field-title').value;
+            if(t) data.push({
+                title: t, originTitle: c.querySelector('.field-origin-title').value,
+                author: c.querySelector('.field-author').value, originAuthor: c.querySelector('.field-origin-author').value,
+                category: c.querySelector('.field-category').value, rating: c.querySelector('.field-rating').value,
+                status: c.querySelector('.field-status').value, review: c.querySelector('.field-review').value,
+                dateStr: new Date().toISOString().slice(0, 7)
+            });
+        });
+        document.getElementById('loading-text').style.display = 'block';
+        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'liff_submit_bulk', data }) });
+        const result = await res.json();
+        alert(result.success ? '✅ 儲存成功！' : '❌ 儲存失敗');
+        location.reload();
+    }
+
+    async function syncToNotion() {
+        document.getElementById('loading-text').style.display = 'block';
+        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'sync_categories', data: categories }) });
+        const json = await res.json();
+        alert(json.success ? '✅ 分類同步成功！' : '❌ 同步失敗');
+        document.getElementById('loading-text').style.display = 'none';
     }
 
     async function shareToSystem() {
         const canvas = document.getElementById('shareCanvas');
-        canvas.toBlob(async (blob) => {
+        canvas.toBlob(async blob => {
             const file = new File([blob], "reading-note.png", { type: "image/png" });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: '我的閱讀筆記' });
-            } else { alert('您的裝置不支援直接分享，請長按圖片儲存後上傳。'); }
+            if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });
+            else alert("不支援分享，請長按圖片儲存");
         });
     }
 
-    // --- 批量儲存書籍 ---
-    document.getElementById('submitBtn').onclick = async function() {
-        const booksData = [];
-        document.querySelectorAll('.book-card').forEach(card => {
-            const title = card.querySelector('.field-title').value.trim();
-            if (title) {
-                booksData.push({
-                    title: title, category: card.querySelector('.field-category').value,
-                    status: card.querySelector('.field-status').value, review: card.querySelector('.field-review').value,
-                    dateStr: new Date().toISOString().slice(0, 7)
-                });
-            }
-        });
-        document.getElementById('loading-text').style.display = 'block';
-        try {
-            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'liff_submit_bulk', data: booksData }) });
-            const result = await res.json();
-            alert(result.success ? '✅ 儲存成功！' : '❌ 儲存失敗');
-            location.reload();
-        } catch(e) { alert('儲存過程出錯'); }
-        document.getElementById('loading-text').style.display = 'none';
-    };
+    function renderTags() {
+        const list = document.getElementById('tag-list');
+        if (!list) return;
+            list.innerHTML = categories.map((c, i) => `
+            <div class="tag-chip">
+                ${c} 
+                <span class="tag-delete" onclick="categories.splice(${i},1);renderTags()">×</span>
+            </div>
+        `).join('');
+    }    
+    function addLocalTag() { const v = document.getElementById('new-tag-input').value; if(v){ categories.push(v); document.getElementById('new-tag-input').value=''; renderTags(); } }
+    function populateCategorySelect() { document.getElementById('add-category-select').innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join(''); }
 
-    // --- 補記心得儲存 ---
-    async function submitUpdateReview() {
-        const payload = {
-            action: 'update_review',
-            data: {
-                pageId: document.getElementById('update-select-book').value,
-                rating: "⭐⭐⭐⭐⭐", // 預設給予 5 星，可依需求調整 UI
-                review: document.getElementById('update-review').value
-            }
-        };
+    async function submitSingleReview() {
+        const payload = { action: 'update_review', data: { pageId: document.getElementById('update-select-book').value, rating: "⭐⭐⭐⭐⭐", review: document.getElementById('update-review-text').value } };
         document.getElementById('loading-text').style.display = 'block';
-        try {
-            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const result = await res.json();
-            alert(result.success ? '✅ 心得已成功更新！' : '❌ 更新失敗');
-            location.reload();
-        } catch(e) { alert('連線失敗'); }
-        document.getElementById('loading-text').style.display = 'none';
+        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await res.json();
+        alert(result.success ? '✅ 更新成功！' : '❌ 失敗');
+        location.reload();
     }
 
     liff.init({ liffId: "2008731100-q3JK2BPf" });
