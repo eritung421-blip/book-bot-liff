@@ -9,46 +9,44 @@
     <style>
         :root { --primary: #455A64; --secondary: #78909C; --accent: #81C784; --bg: #F5F7F8; --white: #FFFFFF; --text: #37474F; }
         
-        body { font-family: -apple-system, "Noto Sans TC", sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; background: var(--white); padding: 35px; border-radius: 40px; box-shadow: 0 30px 70px rgba(0,0,0,0.15); box-sizing: border-box; }
+        body { font-family: -apple-system, "Noto Sans TC", sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; background: var(--white); padding: 35px; border-radius: 40px; box-shadow: 0 30px 70px rgba(0,0,0,0.1); box-sizing: border-box; }
         
         h2 { color: var(--primary); font-size: 2.2rem; text-align: center; margin-bottom: 35px; font-weight: 900; letter-spacing: -1.5px; }
         
         /* 導覽列 */
-        .nav-tabs { display: flex; overflow-x: auto; gap: 12px; margin-bottom: 40px; border-bottom: 2px solid #EEE; padding-bottom: 15px; }
+        .nav-tabs { display: flex; overflow-x: auto; gap: 10px; margin-bottom: 35px; border-bottom: 2px solid #EEE; padding-bottom: 15px; -webkit-overflow-scrolling: touch; }
         .nav-tabs button { flex: 0 0 auto; padding: 12px 22px; font-size: 1rem; border: none; border-radius: 15px; background-color: #ECEFF1; color: var(--secondary); cursor: pointer; transition: 0.3s; }
-        .nav-tabs button.active { background-color: var(--primary); color: white; font-weight: 700; }
+        .nav-tabs button.active { background-color: var(--primary); color: white; font-weight: 700; box-shadow: 0 8px 15px rgba(69, 90, 100, 0.2); }
 
-        /* 表單對齊優化 */
+        /* 欄位對齊強效版 */
         .form-group { margin-bottom: 25px; }
-        label { display: block; font-size: 1rem; margin-bottom: 8px; color: var(--primary); font-weight: 800; }
-        .flex-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end; }
-        .flex-item { flex: 1; display: flex; flex-direction: column; }
+        label { display: block; font-size: 1rem; margin-bottom: 10px; color: var(--primary); font-weight: 800; }
+        .flex-row { display: flex; gap: 12px; width: 100%; align-items: flex-end; margin-bottom: 12px; }
+        .flex-item { flex: 1; min-width: 0; }
         
-        input, select, textarea { width: 100%; padding: 16px; border: 2px solid #ECEFF1; border-radius: 18px; font-size: 1.05rem; box-sizing: border-box; background-color: #FAFAFA; color: var(--text); }
+        input, select, textarea { width: 100%; padding: 16px; border: 2.5px solid #ECEFF1; border-radius: 18px; font-size: 1.05rem; box-sizing: border-box; background-color: #FAFAFA; color: var(--text); }
         input:focus { border-color: var(--primary); background: white; outline: none; }
 
-        .main-btn { width: 100%; padding: 18px; background-color: var(--primary); color: white; border: none; border-radius: 18px; font-size: 1.1rem; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .main-btn { width: 100%; padding: 18px; background-color: var(--primary); color: white; border: none; border-radius: 18px; font-size: 1.1rem; cursor: pointer; font-weight: 700; transition: 0.2s; margin-top: 10px; }
         .main-btn:active { transform: scale(0.98); }
 
-        /* 全屏磨砂遮罩 */
+        /* 質感遮罩 */
         #global-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { width: 60px; height: 60px; border: 6px solid #f3f3f3; border-top: 6px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner { width: 60px; height: 60px; border: 6px solid #EEE; border-top: 6px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        /* 圖表專用容器 */
-        .chart-box { background: white; border-radius: 20px; padding: 15px; border: 1px solid #EEE; margin-bottom: 30px; height: 300px; position: relative; }
-
-        /* 分享卡編輯區 */
-        .search-area { background: #E3F2FD; padding: 20px; border-radius: 25px; margin-bottom: 25px; }
+        /* 圖表與編輯區 */
+        .chart-box { background: #FFF; border-radius: 25px; padding: 20px; border: 1px solid #EEE; margin-bottom: 30px; height: 320px; position: relative; }
+        .search-area { background: #E3F2FD; padding: 20px; border-radius: 25px; margin-bottom: 25px; border: 1px solid #BBDEFB; }
         .editor-box { background: #FFFDE7; border: 2px solid #FFF59D; padding: 25px; border-radius: 25px; margin-bottom: 25px; }
-        #cardPreview { width: 100%; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); margin-top: 25px; display: none; }
-
+        #cardPreview { width: 100%; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); display: none; margin-top: 25px; }
+        
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div id="global-overlay"><div class="spinner"></div><p style="margin-top:20px; font-weight:800; color:var(--primary);">Notion 同步中...</p></div>
+<div id="global-overlay"><div class="spinner"></div><p style="margin-top:20px; font-weight:800; color:var(--primary);">正在連線 Notion...</p></div>
 
 <div class="container">
     <h2>Eri's Reading Hub 📖</h2>
@@ -65,15 +63,15 @@
         <div class="form-group">
             <label>📖 書名 (中文 / 原文)</label>
             <div class="flex-row">
-                <input type="text" id="add-title" placeholder="中文書名">
-                <input type="text" id="add-origin-title" placeholder="原文書名">
+                <div class="flex-item"><input type="text" id="add-title" placeholder="中文書名"></div>
+                <div class="flex-item"><input type="text" id="add-origin-title" placeholder="原文書名"></div>
             </div>
         </div>
         <div class="form-group">
             <label>✍️ 作者 (譯者 / 原文作者)</label>
             <div class="flex-row">
-                <input type="text" id="add-author" placeholder="譯者/主編">
-                <input type="text" id="add-origin-author" placeholder="原文作者">
+                <div class="flex-item"><input type="text" id="add-author" placeholder="譯者/主編"></div>
+                <div class="flex-item"><input type="text" id="add-origin-author" placeholder="原文作者"></div>
             </div>
         </div>
         <div class="form-group">
@@ -87,38 +85,19 @@
             </div>
         </div>
         <div class="form-group">
-            <label>📌 閱讀狀態</label>
-            <select id="add-status"><option value="閱讀完畢☑️">閱讀完畢☑️</option><option value="正在讀📖">正在讀📖</option><option value="願望清單🧚">願望清單🧚</option></select>
-        </div>
-        <div class="form-group">
-            <label>💭 心得紀錄</label>
-            <textarea id="add-review" rows="3" placeholder="開始紀錄..."></textarea>
+            <label>💭 初步心得 (存入內頁)</label>
+            <textarea id="add-review" rows="3" placeholder="此刻的想法..."></textarea>
         </div>
         <button class="main-btn" onclick="submitBulk()">確認儲存至 Notion</button>
     </div>
 
-    <div id="page-update" style="display: none;">
-        <div class="search-area">
-            <label>🔍 搜尋 Notion 書籍</label>
-            <div class="flex-row">
-                <input type="text" id="update-search-input" placeholder="輸入關鍵字...">
-                <button class="main-btn" onclick="triggerSearch('update')" style="width:80px; margin-top:0;">🔍</button>
-            </div>
-            <select id="update-select-book"></select>
-        </div>
-        <label>📝 補寫心得</label>
-        <textarea id="update-review-text" rows="8" placeholder="寫下讀後感..."></textarea>
-        <button class="main-btn" style="background-color: var(--accent); margin-top:20px;" onclick="submitSingleReview()">更新至 Notion</button>
-    </div>
-
     <div id="page-stats" style="display: none;">
-        <label>📅 統計月份篩選</label>
+        <label>📅 月份數據篩選</label>
         <input type="month" id="stats-month-picker" onchange="loadStats()" style="margin-bottom: 25px;">
-        <div id="stats-loader" style="text-align:center; padding:40px;"><div class="spinner" style="margin:auto;"></div></div>
         <div id="stats-content">
             <div style="display: flex; justify-content: space-around; margin-bottom: 30px; text-align:center;">
-                <div><p>本月讀量</p><h2 id="stat-month" style="font-size: 2.5rem; margin:0;">0</h2></div>
-                <div><p>年度累計</p><h2 id="stat-year" style="font-size: 2.5rem; margin:0;">0</h2></div>
+                <div><p>月讀量</p><h2 id="stat-month" style="font-size: 2.5rem; margin:0; color:var(--primary);">0</h2></div>
+                <div><p>年累計</p><h2 id="stat-year" style="font-size: 2.5rem; margin:0; color:var(--primary);">0</h2></div>
             </div>
             <div class="chart-box"><canvas id="trendChart"></canvas></div>
             <div class="chart-box"><canvas id="categoryChart"></canvas></div>
@@ -127,40 +106,25 @@
 
     <div id="page-share" style="display: none;">
         <div class="search-area">
-            <label>第一步：搜尋書籍</label>
+            <label>🔍 第一步：搜尋 Notion 書籍</label>
             <div class="flex-row">
-                <input type="text" id="share-search-input" placeholder="書名關鍵字...">
+                <div class="flex-item"><input type="text" id="share-search-input" placeholder="關鍵字..."></div>
                 <button class="main-btn" onclick="triggerSearch('share')" style="width:80px; margin-top:0;">🔍</button>
             </div>
             <select id="share-select-book" onchange="onShareSelectionChange()"></select>
         </div>
-        
         <div class="editor-box">
-            <label>第二步：編輯 Eri 的心得</label>
-            <textarea id="share-text-editor" rows="4" placeholder="選取書籍後會自動填入..."></textarea>
-            <button class="main-btn" onclick="drawCanvasCard()" style="background:#FFF176; color:#5D4037; font-size:1rem; margin-top:15px;">🎨 生成分享圖預覽</button>
+            <label>✏️ 第二步：編輯 Eri's 心得</label>
+            <textarea id="share-text-editor" rows="4" placeholder="正在挖掘內頁心得..."></textarea>
+            <button class="main-btn" onclick="drawCanvasCard()" style="background:#FFF176; color:#5D4037; margin-top:15px;">🎨 生成分享圖預覽</button>
         </div>
-        
         <canvas id="shareCanvas" width="1080" height="1920" style="display:none;"></canvas>
-        <div style="text-align:center;">
-            <img id="cardPreview" alt="卡片生成中">
-            <button id="ig-btn" class="main-btn" onclick="shareToSystem()" style="background: var(--accent); margin-top:25px; display:none;">📲 分享至 IG</button>
-        </div>
-    </div>
-
-    <div id="page-manage" style="display: none;">
-        <label>現有分類管理</label>
-        <div id="tag-list" style="background:#F8F9FA; padding:20px; border-radius:25px; margin-bottom:20px;"></div>
-        <div class="flex-row">
-            <input type="text" id="new-tag-input" placeholder="新分類名稱">
-            <button class="main-btn" onclick="addLocalTag()" style="width:80px; margin-top:0; font-size:1.5rem;">+</button>
-        </div>
-        <button class="main-btn" onclick="syncToNotion()" style="background:var(--accent);">🚀 同步 Notion</button>
+        <div style="text-align:center;"><img id="cardPreview" alt="預覽圖"><button id="ig-btn" class="main-btn" onclick="shareToSystem()" style="background:var(--accent); margin-top:20px; display:none;">📲 分享至 IG</button></div>
     </div>
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxt6Dytesv6v91YAuFWkFx9b4sZhUu1HJ7tlYuQv_jla-dv1eqoVIsst9DVGl3iXtZNeQ/exec";
+    const GAS_URL = "你的_GAS_部署_網址"; 
     let trendChart, categoryChart, bookList = [], categories = ["自我成長", "心理學", "文學小說", "商業理財"];
     let currentAIThought = "";
 
@@ -170,25 +134,24 @@
 
     function switchTab(tab) {
         ['add', 'update', 'stats', 'share', 'manage'].forEach(t => {
-            document.getElementById(`page-${t}`).style.display = (t === tab) ? 'block' : 'none';
-            document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+            const el = document.getElementById(`page-${t}`);
+            if(el) el.style.display = (t === tab) ? 'block' : 'none';
         });
-        if(tab === 'manage') renderTags();
-        if(tab === 'share' || tab === 'update') fetchBooks();
-        if(tab === 'stats') setTimeout(loadStats, 500); // 延遲確保容器寬度正確
+        if(tab === 'stats') setTimeout(loadStats, 600);
+        if(tab === 'share') fetchBooks();
         if(tab === 'add') populateCategorySelect();
     }
 
+    // 搜尋邏輯：按下按鈕才過濾
     function triggerSearch(type) {
-        const inputId = type === 'share' ? 'share-search-input' : 'update-search-input';
-        const selectId = type === 'share' ? 'share-select-book' : 'update-select-book';
-        const filter = document.getElementById(inputId).value.toLowerCase();
-        const select = document.getElementById(selectId);
+        const filter = document.getElementById(`${type}-search-input`).value.toLowerCase();
+        const select = document.getElementById(`${type}-select-book`);
         const filtered = bookList.filter(b => b.title.toLowerCase().includes(filter));
         select.innerHTML = filtered.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
         if(type === 'share' && filtered.length > 0) onShareSelectionChange();
     }
 
+    // 深度挖掘：抓取內頁心得
     async function onShareSelectionChange() {
         const id = document.getElementById('share-select-book').value;
         if(!id) return;
@@ -198,7 +161,7 @@
             const result = await res.json();
             if (result.success) {
                 const book = result.data;
-                currentAIThought = book.aiSummary || "這是一本值得深度思考的好書。";
+                currentAIThought = book.aiSummary || "Reading is a conversation with the best minds.";
                 document.getElementById('share-text-editor').value = book.review || "";
                 const idx = bookList.findIndex(b => b.id === id);
                 if(idx !== -1) bookList[idx] = book;
@@ -207,6 +170,7 @@
         finally { showOverlay(false); }
     }
 
+    // 穩定繪圖：使用路徑繪製圓角
     function drawCanvasCard() {
         const canvas = document.getElementById('shareCanvas');
         const ctx = canvas.getContext('2d');
@@ -214,43 +178,35 @@
         const book = bookList.find(b => b.id === id);
         const userReview = document.getElementById('share-text-editor').value;
 
-        // 渲染開始
         ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, 1080, 1920);
         ctx.fillStyle = "#455A64"; ctx.fillRect(0, 0, 1080, 480);
         ctx.fillStyle = "#FFFFFF"; ctx.font = "bold 55px sans-serif";
         ctx.fillText("ERI'S READING LOG", 100, 250);
         ctx.font = "45px sans-serif"; ctx.textAlign = "right";
-        ctx.fillText(book?.date || "", 980, 250);
-        ctx.textAlign = "left";
+        ctx.fillText(book?.date || "", 980, 250); ctx.textAlign = "left";
 
-        ctx.fillStyle = "#37474F"; ctx.font = "bold 105px sans-serif";
+        ctx.fillStyle = "#37474F"; ctx.font = "bold 100px sans-serif";
         ctx.fillText(book?.title || "Book Title", 100, 680);
-        ctx.fillStyle = "#90A4AE"; ctx.font = "52px sans-serif";
-        ctx.fillText(book?.originTitle || "", 100, 780);
-        ctx.fillStyle = "#78909C"; ctx.font = "60px sans-serif";
-        ctx.fillText("by " + (book?.author || "Unknown"), 100, 910);
         ctx.fillStyle = "#FFB300"; ctx.font = "75px sans-serif";
-        ctx.fillText(book?.rating || "", 100, 1020);
+        ctx.fillText(book?.rating || "", 100, 1000);
 
         ctx.fillStyle = "#455A64"; ctx.font = "bold 65px sans-serif";
         ctx.fillText("My Thought...", 100, 1180);
-        ctx.fillStyle = "#546E7A"; ctx.font = "italic 55px sans-serif";
+        ctx.fillStyle = "#546E7A"; ctx.font = "italic 52px sans-serif";
         wrapText(ctx, currentAIThought, 100, 1290, 880, 85);
 
-        // 氣泡框 (路徑繪製)
-        const x=100, y=1580, w=880, h=280, r=40;
+        // Eri 氣泡
+        const x=100, y=1550, w=880, h=300, r=40;
         ctx.fillStyle = "#F5F7F8";
         ctx.beginPath(); ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r); ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h); ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r); ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath(); ctx.fill();
 
         ctx.fillStyle = "#37474F"; ctx.font = "italic bold 48px sans-serif";
-        ctx.fillText("Eri：", 150, 1660);
+        ctx.fillText("Eri：", 150, 1630);
         ctx.font = "45px sans-serif"; ctx.fillStyle = "#455A64";
-        wrapText(ctx, userReview, 150, 1740, 780, 75);
+        wrapText(ctx, userReview, 150, 1710, 780, 75);
 
-        // 顯示結果
-        const preview = document.getElementById('cardPreview');
-        preview.src = canvas.toDataURL("image/png");
-        preview.style.display = "block";
+        document.getElementById('cardPreview').src = canvas.toDataURL("image/png");
+        document.getElementById('cardPreview').style.display = "block";
         document.getElementById('ig-btn').style.display = "block";
     }
 
@@ -266,62 +222,44 @@
         ctx.fillText(line, x, y);
     }
 
+    // 修復圖表：傳遞月份參數
     async function loadStats() {
-    const m = document.getElementById('stats-month-picker').value;
-    const loader = document.getElementById('stats-loader');
-    const content = document.getElementById('stats-content');
-    loader.style.display = 'block'; content.style.display = 'none';
-    
-    try {
-        const res = await fetch(`${GAS_URL}?action=get_stats_raw&month=${m}`);
-        const result = await res.json();
-        const d = result.data;
+        const m = document.getElementById('stats-month-picker').value;
+        showOverlay(true);
+        try {
+            const res = await fetch(`${GAS_URL}?action=get_stats_raw&month=${m}`);
+            const json = await res.json();
+            const d = json.data;
+            document.getElementById('stat-month').innerText = d.summary.thisMonth;
+            document.getElementById('stat-year').innerText = d.summary.thisYear;
 
-        document.getElementById('stat-month').innerText = d.summary.thisMonth;
-        document.getElementById('stat-year').innerText = d.summary.thisYear;
+            const tCtx = document.getElementById('trendChart').getContext('2d');
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(tCtx, {
+                type: 'line',
+                data: { labels: Object.keys(d.trend).sort(), datasets: [{ label: '閱讀量', data: Object.values(d.trend), borderColor: '#455A64', tension: 0.4, fill: true, backgroundColor: 'rgba(69,90,100,0.1)' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
 
-        // 📈 趨勢圖：改為折線圖 (Line Chart)
-        const tCtx = document.getElementById('trendChart').getContext('2d');
-        if(trendChart) trendChart.destroy();
-        trendChart = new Chart(tCtx, {
-            type: 'line',
-            data: { 
-                labels: Object.keys(d.trend).sort(), 
-                datasets: [{ 
-                    data: Object.values(d.trend), 
-                    borderColor: '#455A64', backgroundColor: 'rgba(69, 90, 100, 0.1)',
-                    fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#81C784' 
-                }] 
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+            const cCtx = document.getElementById('categoryChart').getContext('2d');
+            if(categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(cCtx, {
+                type: 'bar',
+                data: { labels: Object.keys(d.categoryDist), datasets: [{ data: Object.values(d.categoryDist), backgroundColor: '#81C784' }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        } catch(e) { console.error(e); }
+        finally { showOverlay(false); }
+    }
 
-        // 📊 分類分佈：改為橫向長條圖 (更適合顯示數字)
-        const cCtx = document.getElementById('categoryChart').getContext('2d');
-        if(categoryChart) categoryChart.destroy();
-        categoryChart = new Chart(cCtx, {
-            type: 'bar',
-            data: { 
-                labels: Object.keys(d.categoryDist), 
-                datasets: [{ 
-                    data: Object.values(d.categoryDist), 
-                    backgroundColor: '#81C784', borderRadius: 10 
-                }] 
-            },
-            options: { 
-                indexAxis: 'y', // 🔥 關鍵：變為橫向
-                responsive: true, maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false },
-                    // 如果你想直接在圖上顯字，可以透過 tooltip 或這類配置
-                },
-                scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
-        content.style.display = 'block';
-    } catch(e) { console.error(e); }
-    finally { loader.style.display = 'none'; }
-}
+    async function fetchBooks() {
+        const res = await fetch(GAS_URL + "?action=get_book_list");
+        const json = await res.json();
+        bookList = json.data;
+        const options = bookList.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
+        document.getElementById('share-select-book').innerHTML = options;
+    }
+
     async function submitBulk() {
         const payload = [{
             title: document.getElementById('add-title').value,
@@ -330,7 +268,7 @@
             originAuthor: document.getElementById('add-origin-author').value,
             category: document.getElementById('add-category-select').value,
             rating: document.getElementById('add-rating').value,
-            status: document.getElementById('add-status').value,
+            status: "閱讀完畢☑️",
             review: document.getElementById('add-review').value,
             dateStr: new Date().toISOString().slice(0, 7)
         }];
@@ -341,28 +279,11 @@
         location.reload();
     }
 
-    async function syncToNotion() {
-        showOverlay(true);
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'sync_categories', data: categories }) });
-        const json = await res.json();
-        showOverlay(false);
-        alert(json.success ? "✅ 同步成功！" : "❌ 失敗");
+    function populateCategorySelect() { 
+        document.getElementById('add-category-select').innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join(''); 
     }
 
-    function renderTags() { document.getElementById('tag-list').innerHTML = categories.map((c, i) => `<div class="tag-chip">${c} <span class="tag-delete" onclick="categories.splice(${i},1);renderTags()">×</span></div>`).join(''); }
-    function addLocalTag() { const v = document.getElementById('new-tag-input').value; if(v){ categories.push(v); document.getElementById('new-tag-input').value=''; renderTags(); } }
-    function populateCategorySelect() { document.getElementById('add-category-select').innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join(''); }
-
-    async function shareToSystem() {
-        const canvas = document.getElementById('shareCanvas');
-        canvas.toBlob(async b => {
-            const f = new File([b], "note.png", { type: "image/png" });
-            if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f] });
-            else alert("請長按圖片儲存");
-        });
-    }
-
-    liff.init({ liffId: "2008731100-q3JK2BPf" });
+    liff.init({ liffId: "你的_LIFF_ID" });
 </script>
 </body>
 </html>
